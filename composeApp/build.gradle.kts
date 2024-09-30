@@ -76,8 +76,8 @@ android {
         applicationId = "io.github.dzivko1.haze"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersionName.get()
     }
     packaging {
         resources {
@@ -108,7 +108,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "io.github.dzivko1.haze"
-            packageVersion = "1.0.0"
+            packageVersion = libs.versions.appVersionName.get()
         }
     }
 }

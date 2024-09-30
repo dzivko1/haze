@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.dzivko1.haze"
-version = "1.0.0"
+version = libs.versions.appVersionName.get()
 application {
     mainClass.set("io.github.dzivko1.haze.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
