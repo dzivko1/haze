@@ -1,0 +1,9 @@
+<resources>
+  <string name="app_name">Haze</string>
+
+  <string name="nav_home">Home</string>
+  <string name="nav_store">Store</string>
+  <string name="nav_inventory">Inventory</string>
+  <string name="nav_trading">Trading</string>
+  <string name="nav_profile">Profile</string>
+</resources>
