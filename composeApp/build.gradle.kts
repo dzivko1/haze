@@ -70,7 +70,7 @@ kotlin {
 }
 
 android {
-  namespace = "io.github.dzivko1.haze"
+  namespace = "io.github.dzivko1.haze.client"
   compileSdk = libs.versions.android.compileSdk.get().toInt()
 
   sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
@@ -108,7 +108,7 @@ android {
 
 compose.desktop {
   application {
-    mainClass = "io.github.dzivko1.haze.MainKt"
+    mainClass = "io.github.dzivko1.haze.client.MainKt"
 
     nativeDistributions {
       targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
