@@ -1,6 +1,8 @@
 package io.github.dzivko1.haze.server.data
 
 import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppsTable
+import io.github.dzivko1.haze.server.data.item.model.ItemClassesTable
+import io.github.dzivko1.haze.server.data.item.model.ItemsTable
 import io.github.dzivko1.haze.server.data.user.model.UsersTable
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
@@ -14,6 +16,6 @@ fun Application.configureDatabase() {
   )
 
   transaction {
-    SchemaUtils.create(UsersTable, HazeAppsTable)
+    SchemaUtils.create(UsersTable, HazeAppsTable, ItemsTable, ItemClassesTable)
   }
 }
