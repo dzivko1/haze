@@ -22,7 +22,7 @@ fun Application.authRoutes() {
 fun Route.registerRoute() {
   val userRepository by inject<UserRepository>()
 
-  post("/register") {
+  post("/auth/register") {
     val authData = call.receive<UserAuth>()
     userRepository.saveUser(authData.username, authData.password)
     call.respond(HttpStatusCode.Created)
@@ -32,7 +32,7 @@ fun Route.registerRoute() {
 fun Route.loginRoute() {
   val userRepository by inject<UserRepository>()
 
-  post("/login") {
+  post("/auth/login") {
     val authData = call.receive<UserAuth>()
 
     if (userRepository.verifyPassword(authData.username, authData.password)) {
@@ -40,11 +40,12 @@ fun Route.loginRoute() {
       val secret = config.property("jwt.secret").getString()
       val issuer = config.property("jwt.issuer").getString()
       val audience = config.property("jwt.audience").getString()
+      val userId = userRepository.getUserByName(authData.username)!!.id.toHexString()
       val weekFromNow = Instant.now().plusSeconds(7 * 24 * 60 * 60)
       val token = JWT.create()
         .withAudience(audience)
         .withIssuer(issuer)
-        .withClaim("username", authData.username)
+        .withClaim("userId", userId)
         .withExpiresAt(weekFromNow)
         .sign(Algorithm.HMAC256(secret))
       call.respond(hashMapOf("token" to token))

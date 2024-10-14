@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 plugins {
   alias(libs.plugins.kotlinJvm)
   alias(libs.plugins.kotlinSerialization)
@@ -10,6 +12,10 @@ version = libs.versions.appVersionName.get()
 application {
   mainClass.set("io.github.dzivko1.haze.server.ApplicationKt")
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
+}
+
+tasks.named<KotlinCompilationTask<*>>("compileKotlin").configure {
+  compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
 }
 
 dependencies {
