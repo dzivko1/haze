@@ -12,8 +12,8 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import java.time.Instant
 
-fun Route.authRoutes() {
-  route("/auth") {
+fun Application.authRoutes() {
+  routing {
     registerRoute()
     loginRoute()
   }
