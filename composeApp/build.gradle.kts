@@ -57,6 +57,7 @@ kotlin {
       implementation(compose.components.uiToolingPreview)
       implementation(libs.kotlinx.serialization.json)
       implementation(project.dependencies.platform(libs.koin.bom))
+      implementation(libs.koin.core)
       implementation(libs.koin.compose.viewmodel.navigation)
       implementation(libs.lifecycle.viewmodel)
       implementation(libs.lifecycle.runtime.compose)

@@ -2,6 +2,7 @@ package io.github.dzivko1.haze.server.domain.item
 
 import io.github.dzivko1.haze.data.item.model.CreateItemsRequest
 import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
+import io.github.dzivko1.haze.domain.inventory.model.Inventory
 
 interface ItemRepository {
 
@@ -19,4 +20,9 @@ interface ItemRepository {
    * Creates new instances of items belonging to the given users.
    */
   suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long>
+
+  /**
+   * Gets items that belong to the given user.
+   */
+  suspend fun getInventory(id: Long): Inventory?
 }

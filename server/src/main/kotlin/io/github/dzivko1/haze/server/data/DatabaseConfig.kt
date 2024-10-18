@@ -16,6 +16,6 @@ fun Application.configureDatabase() {
   )
 
   transaction {
-    SchemaUtils.create(UsersTable, HazeAppsTable, ItemsTable, ItemClassesTable)
+    SchemaUtils.createMissingTablesAndColumns(UsersTable, HazeAppsTable, ItemsTable, ItemClassesTable)
   }
 }
