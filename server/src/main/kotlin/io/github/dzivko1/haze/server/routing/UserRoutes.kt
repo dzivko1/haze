@@ -13,6 +13,8 @@ import org.koin.ktor.ext.inject
 
 fun Application.userRoutes() {
   routing {
+    inventoryRoutes()
+
     authenticate {
       getUserRoute()
     }

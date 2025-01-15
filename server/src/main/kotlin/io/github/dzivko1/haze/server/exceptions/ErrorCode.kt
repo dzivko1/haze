@@ -5,5 +5,6 @@ enum class ErrorCode(
   val description: String,
 ) {
   UsernameTaken(10, "Username taken"),
-  UserNotFound(11, "User not found")
+  UserNotFound(11, "User not found"),
+  InventoryNotFound(12, "Inventory not found")
 }

@@ -1,6 +1,7 @@
 package io.github.dzivko1.haze.server.data
 
 import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppsTable
+import io.github.dzivko1.haze.server.data.item.model.InventoriesTable
 import io.github.dzivko1.haze.server.data.item.model.ItemClassesTable
 import io.github.dzivko1.haze.server.data.item.model.ItemsTable
 import io.github.dzivko1.haze.server.data.user.model.UsersTable
@@ -12,10 +13,11 @@ import org.jetbrains.exposed.sql.transactions.transaction
 fun Application.configureDatabase() {
   Database.connect(
     "jdbc:postgresql://localhost:5432/postgres",
-    user = "postgres"
+    user = "postgres",
+    password = "postgres"
   )
 
   transaction {
-    SchemaUtils.create(UsersTable, HazeAppsTable, ItemsTable, ItemClassesTable)
+    SchemaUtils.createMissingTablesAndColumns(UsersTable, HazeAppsTable, InventoriesTable, ItemClassesTable, ItemsTable)
   }
 }
