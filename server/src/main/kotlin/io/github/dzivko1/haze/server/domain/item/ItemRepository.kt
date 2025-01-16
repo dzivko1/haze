@@ -3,6 +3,7 @@ package io.github.dzivko1.haze.server.domain.item
 import io.github.dzivko1.haze.data.item.model.CreateItemsRequest
 import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
 import io.github.dzivko1.haze.domain.inventory.model.Inventory
+import io.github.dzivko1.haze.domain.item.model.ItemClass
 import kotlin.uuid.Uuid
 
 interface ItemRepository {
@@ -16,6 +17,11 @@ interface ItemRepository {
    * @return A list of all affected item class IDs.
    */
   suspend fun defineItems(appId: Int, items: List<DefineItemsRequest.Item>): List<Long>
+
+  /**
+   * Gets the item class definition for the specified app.
+   */
+  suspend fun getItemDefinition(appId: Int): List<ItemClass>
 
   /**
    * Creates new instances of items belonging to the given users.

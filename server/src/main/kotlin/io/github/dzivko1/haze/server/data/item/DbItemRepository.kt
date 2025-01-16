@@ -3,6 +3,7 @@ package io.github.dzivko1.haze.server.data.item
 import io.github.dzivko1.haze.data.item.model.CreateItemsRequest
 import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
 import io.github.dzivko1.haze.domain.inventory.model.Inventory
+import io.github.dzivko1.haze.domain.item.model.ItemClass
 import io.github.dzivko1.haze.server.data.item.model.*
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
 import io.github.dzivko1.haze.server.util.suspendTransaction
@@ -28,6 +29,19 @@ class DbItemRepository : ItemRepository {
         this[ItemClassesTable.smallImageUrl] = itemClass.smallImageUrl
         this[ItemClassesTable.largeImageUrl] = itemClass.largeImageUrl
       }.map { it[ItemClassesTable.id].value }
+    }
+  }
+
+  override suspend fun getItemDefinition(appId: Int): List<ItemClass> {
+    return suspendTransaction {
+      ItemClassDao.find { ItemClassesTable.app eq appId }.map {
+        ItemClass(
+          id = it.id.value,
+          name = it.name,
+          smallImageUrl = it.smallImageUrl,
+          largeImageUrl = it.largeImageUrl
+        )
+      }
     }
   }
 

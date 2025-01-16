@@ -13,9 +13,20 @@ import org.koin.ktor.ext.inject
 fun Application.itemRoutes() {
   routing {
     authenticate {
+      getItemDefinitionRoute()
       defineItemsRoute()
       createItemsRoute()
     }
+  }
+}
+
+fun Route.getItemDefinitionRoute() {
+  val itemRepository by inject<ItemRepository>()
+
+  get("/items/definition/{appId}") {
+    val appId = call.parameters["appId"]!!.toInt()
+    val itemDef = itemRepository.getItemDefinition(appId)
+    call.respond(hashMapOf("items" to itemDef))
   }
 }
 
