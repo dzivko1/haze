@@ -25,6 +25,8 @@ interface ItemRepository {
 
   /**
    * Creates new instances of items belonging to the given users.
+   *
+   * @return the IDs of all created items.
    */
   suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long>
 
@@ -37,4 +39,11 @@ interface ItemRepository {
    * Gets items that belong to the given user's inventory.
    */
   suspend fun getInventory(userId: Uuid, appId: Int): Inventory?
+
+  /**
+   * Creates a given user's inventory for the given app.
+   *
+   * @return the ID of the created inventory.
+   */
+  suspend fun createInventory(userId: Uuid, appId: Int): Long
 }

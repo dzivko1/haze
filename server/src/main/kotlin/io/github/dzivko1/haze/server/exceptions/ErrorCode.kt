@@ -6,5 +6,6 @@ enum class ErrorCode(
 ) {
   UsernameTaken(10, "Username taken"),
   UserNotFound(11, "User not found"),
-  InventoryNotFound(12, "Inventory not found")
+  AppNotFound(12, "App not found"),
+  InventoryNotFound(13, "Inventory not found")
 }
