@@ -16,14 +16,14 @@ import kotlin.uuid.toKotlinUuid
 
 class DbItemRepository : ItemRepository {
 
-  override suspend fun defineItems(items: List<DefineItemsRequest.Item>): List<Long> {
+  override suspend fun defineItems(appId: Int, items: List<DefineItemsRequest.Item>): List<Long> {
     return suspendTransaction {
       ItemClassesTable.batchUpsert(
         data = items,
         onUpdateExclude = listOf(ItemClassesTable.id)
       ) { itemClass ->
         if (itemClass.id != null) this[ItemClassesTable.id] = itemClass.id!!
-        this[ItemClassesTable.app] = itemClass.appId
+        this[ItemClassesTable.app] = appId
         this[ItemClassesTable.name] = itemClass.name
         this[ItemClassesTable.iconUrl] = itemClass.iconUrl
       }.map { it[ItemClassesTable.id].value }

@@ -4,12 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DefineItemsRequest(
+  val appId: Int,
   val items: List<Item>,
 ) {
   @Serializable
   data class Item(
     val id: Long? = null,
-    val appId: Int,
     val name: String,
     val iconUrl: String,
   )

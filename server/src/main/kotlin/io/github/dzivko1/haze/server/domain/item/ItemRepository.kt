@@ -8,14 +8,14 @@ import kotlin.uuid.Uuid
 interface ItemRepository {
 
   /**
-   * Creates/updates the item class definition.
+   * Creates/updates the item class definition for the specified app.
    * - If the ID is not specified for an item, a new item class is created with an auto-generated ID.
    * - If an existing ID is provided, the corresponding item class is updated.
    * - If a nonexistent ID is provided, a new item class is created with that ID.
    *
    * @return A list of all affected item class IDs.
    */
-  suspend fun defineItems(items: List<DefineItemsRequest.Item>): List<Long>
+  suspend fun defineItems(appId: Int, items: List<DefineItemsRequest.Item>): List<Long>
 
   /**
    * Creates new instances of items belonging to the given users.

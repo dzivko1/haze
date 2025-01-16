@@ -24,7 +24,7 @@ fun Route.defineItemsRoute() {
 
   post("/items/definition") {
     val request = call.receive<DefineItemsRequest>()
-    val ids = itemRepository.defineItems(request.items)
+    val ids = itemRepository.defineItems(request.appId, request.items)
     call.respond(hashMapOf("itemClassIds" to ids))
   }
 }
