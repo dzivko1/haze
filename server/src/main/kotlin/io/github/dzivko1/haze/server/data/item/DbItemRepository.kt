@@ -25,7 +25,8 @@ class DbItemRepository : ItemRepository {
         if (itemClass.id != null) this[ItemClassesTable.id] = itemClass.id!!
         this[ItemClassesTable.app] = appId
         this[ItemClassesTable.name] = itemClass.name
-        this[ItemClassesTable.iconUrl] = itemClass.iconUrl
+        this[ItemClassesTable.smallImageUrl] = itemClass.smallImageUrl
+        this[ItemClassesTable.largeImageUrl] = itemClass.largeImageUrl
       }.map { it[ItemClassesTable.id].value }
     }
   }

@@ -10,13 +10,15 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 object ItemClassesTable : LongIdTable("item_classes") {
   val app = reference("app", HazeAppsTable)
   val name = varchar("name", 50)
-  val iconUrl = varchar("icon_url", 500)
+  val smallImageUrl = varchar("small_image_url", 500)
+  val largeImageUrl = varchar("large_image_url", 500)
 }
 
 class ItemClassDao(id: EntityID<Long>) : LongEntity(id) {
   var app by HazeAppDao referencedOn ItemClassesTable.app
   var name by ItemClassesTable.name
-  var iconUrl by ItemClassesTable.iconUrl
+  var smallImageUrl by ItemClassesTable.smallImageUrl
+  var largeImageUrl by ItemClassesTable.largeImageUrl
 
   companion object : LongEntityClass<ItemClassDao>(ItemClassesTable)
 }

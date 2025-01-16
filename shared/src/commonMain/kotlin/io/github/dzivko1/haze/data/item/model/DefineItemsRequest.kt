@@ -11,6 +11,7 @@ data class DefineItemsRequest(
   data class Item(
     val id: Long? = null,
     val name: String,
-    val iconUrl: String,
+    val smallImageUrl: String,
+    val largeImageUrl: String,
   )
 }
