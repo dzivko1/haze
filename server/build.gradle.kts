@@ -38,6 +38,5 @@ dependencies {
   implementation(libs.exposed.kotlin.datetime)
   implementation(libs.postgresql)
 
-  testImplementation(libs.ktor.server.tests)
   testImplementation(libs.kotlin.test.junit)
 }
