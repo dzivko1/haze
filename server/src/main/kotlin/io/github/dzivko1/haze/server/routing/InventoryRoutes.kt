@@ -28,7 +28,7 @@ fun Route.getInventoryRoute() {
   }
 
   get("/user/{userId}/inventory/{appId}") {
-    val userId = call.getUserIdParam("id")
+    val userId = call.getUserIdParam("userId")
       ?: throw ClientException(ErrorCode.UserNotFound)
     val appId = call.parameters["appId"]!!.toInt()
 

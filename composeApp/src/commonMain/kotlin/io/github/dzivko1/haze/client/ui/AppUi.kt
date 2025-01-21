@@ -3,6 +3,7 @@ package io.github.dzivko1.haze.client.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,12 +20,18 @@ import io.github.dzivko1.haze.client.ui.profile.ProfileSectionRoute
 import io.github.dzivko1.haze.client.ui.store.StoreSectionRoute
 import io.github.dzivko1.haze.client.ui.trading.TradingSectionRoute
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AppUi() {
   Scaffold { contentPadding ->
     Column(Modifier.padding(contentPadding)) {
       val navController = rememberNavController()
+      val mainViewModel = koinViewModel<MainViewModel>()
+
+      LaunchedEffect(Unit) {
+        mainViewModel.autoLogin()
+      }
 
       NavBar(navController)
 

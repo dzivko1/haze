@@ -2,7 +2,7 @@ package io.github.dzivko1.haze.server.routing
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.github.dzivko1.haze.domain.user.model.UserAuth
+import io.github.dzivko1.haze.data.user.model.UserAuthRequest
 import io.github.dzivko1.haze.server.domain.user.UserRepository
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -23,7 +23,7 @@ fun Route.registerRoute() {
   val userRepository by inject<UserRepository>()
 
   post("/auth/register") {
-    val authData = call.receive<UserAuth>()
+    val authData = call.receive<UserAuthRequest>()
     userRepository.saveUser(authData.username, authData.password)
     call.respond(HttpStatusCode.Created)
   }
@@ -33,7 +33,7 @@ fun Route.loginRoute() {
   val userRepository by inject<UserRepository>()
 
   post("/auth/login") {
-    val authData = call.receive<UserAuth>()
+    val authData = call.receive<UserAuthRequest>()
 
     if (userRepository.verifyPassword(authData.username, authData.password)) {
       val config = application.environment.config

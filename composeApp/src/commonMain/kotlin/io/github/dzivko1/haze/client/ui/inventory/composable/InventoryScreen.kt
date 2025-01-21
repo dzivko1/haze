@@ -1,6 +1,5 @@
 package io.github.dzivko1.haze.client.ui.inventory.composable
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,7 +9,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import io.github.dzivko1.haze.client.ui.inventory.InventoryUiState
 import io.github.dzivko1.haze.client.ui.inventory.ItemSlotUi
 import io.github.dzivko1.haze.client.util.ITEM_SLOT_HEIGHT
@@ -66,9 +67,10 @@ private fun ItemSlot(
     modifier = modifier.size(ITEM_SLOT_WIDTH, ITEM_SLOT_HEIGHT),
   ) {
     if (slot.item != null) {
-      Image(
-        bitmap = slot.item.image,
-        contentDescription = slot.item.name
+      AsyncImage(
+        model = slot.item.imageUrl,
+        contentDescription = slot.item.name,
+        filterQuality = FilterQuality.High
       )
     }
   }

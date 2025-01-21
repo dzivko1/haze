@@ -1,9 +1,9 @@
-package io.github.dzivko1.haze.domain.user.model
+package io.github.dzivko1.haze.data.user.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserAuth(
+data class UserAuthRequest(
   val username: String,
   val password: String,
 )

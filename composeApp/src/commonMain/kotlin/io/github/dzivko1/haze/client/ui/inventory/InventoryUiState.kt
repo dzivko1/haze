@@ -1,8 +1,7 @@
 package io.github.dzivko1.haze.client.ui.inventory
 
-import androidx.compose.ui.graphics.ImageBitmap
-
 data class InventoryUiState(
+  val isLoading: Boolean = true,
   val itemSlots: List<ItemSlotUi> = emptyList(),
 )
 
@@ -11,7 +10,7 @@ data class ItemSlotUi(
 )
 
 data class ItemUi(
-  val id: String,
-  val image: ImageBitmap,
-  val name: String,
+  val id: Long,
+  val name: String?,
+  val imageUrl: String?,
 )
