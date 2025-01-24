@@ -9,5 +9,6 @@ fun Application.configureRouting() {
   authRoutes()
   appRoutes()
   userRoutes()
+  inventoryRoutes()
   itemRoutes()
 }

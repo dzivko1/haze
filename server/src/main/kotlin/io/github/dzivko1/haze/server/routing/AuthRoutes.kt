@@ -19,7 +19,7 @@ fun Application.authRoutes() {
   }
 }
 
-fun Route.registerRoute() {
+private fun Route.registerRoute() {
   val userRepository by inject<UserRepository>()
 
   post("/auth/register") {
@@ -29,7 +29,7 @@ fun Route.registerRoute() {
   }
 }
 
-fun Route.loginRoute() {
+private fun Route.loginRoute() {
   val userRepository by inject<UserRepository>()
 
   post("/auth/login") {

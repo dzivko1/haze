@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
@@ -71,6 +72,7 @@ fun InventoryScreen(
               slotPositions[index] = it.positionInParent()
             }.draggable2D(
               state = rememberDraggable2DState { draggedItemCenter += it },
+              enabled = !slot.isLoading,
               onDragStarted = { anchorOffset ->
                 val slotPosition = slotPositions[index] ?: Offset.Unspecified
                 draggedItemCenter = slotPosition + anchorOffset
@@ -82,7 +84,7 @@ fun InventoryScreen(
                     && draggedItemCenter.y in slotPosition.y..slotPosition.y + slotSizePx.height
                 }?.key
 
-                if (targetIndex != null && targetIndex != index) {
+                if (targetIndex != null && targetIndex != index && !uiState.itemSlots[targetIndex].isLoading) {
                   onItemSwap(index, targetIndex)
                 }
                 draggedItem = null
@@ -125,8 +127,12 @@ private fun ItemSlot(
     shadowElevation = 2.dp,
     modifier = modifier.size(ITEM_SLOT_WIDTH, ITEM_SLOT_HEIGHT),
   ) {
-    if (slot.item != null) {
-      AsyncImage(
+    when {
+      slot.isLoading -> CircularProgressIndicator(
+        modifier = Modifier.requiredSize(ITEM_SLOT_WIDTH / 3),
+        color = MaterialTheme.colorScheme.tertiary
+      )
+      slot.item != null -> AsyncImage(
         model = slot.item.imageUrl,
         contentDescription = slot.item.name,
         filterQuality = FilterQuality.High

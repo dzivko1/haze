@@ -4,18 +4,17 @@ import io.github.dzivko1.haze.data.item.model.CreateItemsRequest
 import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
 import io.github.dzivko1.haze.domain.inventory.model.Inventory
 import io.github.dzivko1.haze.domain.item.model.ItemClass
-import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppDao
+import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppsTable
 import io.github.dzivko1.haze.server.data.item.model.*
-import io.github.dzivko1.haze.server.data.user.model.UserDao
+import io.github.dzivko1.haze.server.data.user.model.UsersTable
 import io.github.dzivko1.haze.server.domain.hazeApp.getInitialInventorySize
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
 import io.github.dzivko1.haze.server.exceptions.ClientException
 import io.github.dzivko1.haze.server.exceptions.ErrorCode
+import io.github.dzivko1.haze.server.util.containsId
 import io.github.dzivko1.haze.server.util.suspendTransaction
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.batchUpsert
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.*
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 import kotlin.uuid.toKotlinUuid
@@ -89,6 +88,7 @@ class DbItemRepository : ItemRepository {
     return suspendTransaction {
       InventoryDao.findById(id)?.let { inventory ->
         Inventory(
+          id = id,
           ownerId = inventory.user.value.toKotlinUuid(),
           appId = inventory.app.value,
           size = inventory.size,
@@ -112,20 +112,39 @@ class DbItemRepository : ItemRepository {
       ?.let { getInventory(it) }
   }
 
-  private suspend fun getInventoryId(userId: Uuid, appId: Int): Long? {
+  override suspend fun getInventoryId(userId: Uuid, appId: Int): Long? {
     return suspendTransaction {
-      InventoryDao.find { InventoriesTable.user eq userId.toJavaUuid() and (InventoriesTable.app eq appId) }
-        .firstOrNull()?.id?.value
+      InventoriesTable.select(InventoriesTable.id)
+        .where { InventoriesTable.user eq userId.toJavaUuid() }
+        .andWhere { InventoriesTable.app eq appId }
+        .firstOrNull()?.get(InventoriesTable.id)?.value
     }
   }
 
   override suspend fun createInventory(userId: Uuid, appId: Int): Long {
-    val user = UserDao.findById(userId.toJavaUuid()) ?: throw ClientException(ErrorCode.UserNotFound)
-    val app = HazeAppDao.findById(appId) ?: throw ClientException(ErrorCode.AppNotFound)
-    return InventoryDao.new {
-      this.user = user.id
-      this.app = app.id
-      this.size = getInitialInventorySize(appId)
-    }.id.value
+    return suspendTransaction {
+      if (!UsersTable.containsId(userId)) throw ClientException(ErrorCode.UserNotFound)
+      if (!HazeAppsTable.containsId(appId)) throw ClientException(ErrorCode.AppNotFound)
+
+      InventoryDao.new {
+        this.user = EntityID(userId.toJavaUuid(), UsersTable)
+        this.app = EntityID(appId, HazeAppsTable)
+        this.size = getInitialInventorySize(appId)
+      }.id.value
+    }
+  }
+
+  override suspend fun swapItems(inventoryId: Long, indexA: Int, indexB: Int) {
+    suspendTransaction {
+      if (!InventoriesTable.containsId(inventoryId)) throw ClientException(ErrorCode.InventoryNotFound)
+
+      val itemA = ItemDao.find { ItemsTable.inventory eq inventoryId and (ItemsTable.slotIndex eq indexA) }
+        .forUpdate().singleOrNull()
+      val itemB = ItemDao.find { ItemsTable.inventory eq inventoryId and (ItemsTable.slotIndex eq indexB) }
+        .forUpdate().singleOrNull()
+
+      itemA?.slotIndex = indexB
+      itemB?.slotIndex = indexA
+    }
   }
 }

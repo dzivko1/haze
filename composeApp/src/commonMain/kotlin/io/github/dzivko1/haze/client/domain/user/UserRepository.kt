@@ -11,7 +11,7 @@ class UserRepository(
     return dataStore.authToken != null
   }
 
-  suspend fun authenticateUser(username: String, password: String) {
-    api.authenticateUser(username, password)
+  suspend fun authenticateUser(username: String, password: String): Result<Unit> {
+    return api.authenticateUser(username, password)
   }
 }

@@ -42,8 +42,8 @@ fun ApplicationCall.getUserId(): Uuid {
 }
 
 /**
- * Extracts a valid user ID claim from this call's path parameter specified by [paramName].
- * Returns `null` if a valid ID cannot be extracted.
+ * Extracts the user ID from this call's path parameter specified by [paramName].
+ * Returns `null` if an ID cannot be extracted.
  */
 fun ApplicationCall.getUserIdParam(paramName: String): Uuid? {
   return runCatching {

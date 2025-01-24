@@ -31,6 +31,11 @@ interface ItemRepository {
   suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long>
 
   /**
+   * Gets the ID of the inventory denoted by the given [userId] and [appId] combination.
+   */
+  suspend fun getInventoryId(userId: Uuid, appId: Int): Long?
+
+  /**
    * Gets items that belong in the given inventory.
    */
   suspend fun getInventory(id: Long): Inventory?
@@ -46,4 +51,9 @@ interface ItemRepository {
    * @return the ID of the created inventory.
    */
   suspend fun createInventory(userId: Uuid, appId: Int): Long
+
+  /**
+   * Swaps items between the slots denoted by [indexA] and [indexB].
+   */
+  suspend fun swapItems(inventoryId: Long, indexA: Int, indexB: Int)
 }

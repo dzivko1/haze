@@ -43,9 +43,8 @@ fun Route.defineItemsRoute() {
 fun Route.createItemsRoute() {
   val itemRepository by inject<ItemRepository>()
 
-  post("/items") {
-    val request = call.receive<CreateItemsRequest>()
-    val ids = itemRepository.createItems(request.items)
+  post("/items") { body: CreateItemsRequest ->
+    val ids = itemRepository.createItems(body.items)
     call.respond(hashMapOf("itemIds" to ids))
   }
 }

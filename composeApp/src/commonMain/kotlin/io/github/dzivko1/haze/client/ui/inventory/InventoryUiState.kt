@@ -6,6 +6,7 @@ data class InventoryUiState(
 )
 
 data class ItemSlotUi(
+  val isLoading: Boolean = false,
   val item: ItemUi? = null,
 )
 

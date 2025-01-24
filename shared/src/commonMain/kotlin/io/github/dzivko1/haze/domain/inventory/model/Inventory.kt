@@ -6,6 +6,7 @@ import kotlin.uuid.Uuid
 
 @Serializable
 data class Inventory(
+  val id: Long,
   @Serializable(with = UuidSerializer::class)
   val ownerId: Uuid,
   val appId: Int,

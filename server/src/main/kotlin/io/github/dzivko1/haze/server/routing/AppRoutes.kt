@@ -17,7 +17,7 @@ fun Application.appRoutes() {
   }
 }
 
-fun Route.registerAppRoute() {
+private fun Route.registerAppRoute() {
   val appRepository by inject<HazeAppRepository>()
 
   post("/apps/register") {

@@ -11,9 +11,9 @@ fun AppTheme(
 ) {
   MaterialTheme(
     colorScheme = darkColorScheme(
-      primary = Color(0xFF000000),
-      secondary = Color(0xFF088C4D),
-      tertiary = Color(0xFF154A5D),
+      primary = Color(0xFF00FF00),
+      secondary = Color(0xFF0000FF),
+      tertiary = Color(0xFF444444),
       background = Color(0xFF1D1C1B),
       surface = Color(0xFF161514),
       surfaceBright = Color(0xFF50463d),

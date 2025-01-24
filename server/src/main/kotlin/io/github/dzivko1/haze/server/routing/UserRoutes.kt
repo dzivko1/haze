@@ -1,5 +1,6 @@
 package io.github.dzivko1.haze.server.routing
 
+import io.github.dzivko1.haze.server.domain.item.ItemRepository
 import io.github.dzivko1.haze.server.domain.user.UserRepository
 import io.github.dzivko1.haze.server.exceptions.ClientException
 import io.github.dzivko1.haze.server.exceptions.ErrorCode
@@ -15,13 +16,12 @@ fun Application.userRoutes() {
   routing {
     authenticate {
       getUserRoute()
-
-      inventoryRoutes()
+      getUserInventoryRoute()
     }
   }
 }
 
-fun Route.getUserRoute() {
+private fun Route.getUserRoute() {
   val userRepository by inject<UserRepository>()
 
   get("/user/") {
@@ -41,5 +41,30 @@ fun Route.getUserRoute() {
       ?: throw ClientException(ErrorCode.UserNotFound)
 
     call.respond(user)
+  }
+}
+
+private fun Route.getUserInventoryRoute() {
+  val itemRepository by inject<ItemRepository>()
+
+  get("/user/inventory/{appId}") {
+    val userId = call.getUserId()
+    val appId = call.parameters["appId"]!!.toInt()
+
+    val inventory = itemRepository.getInventory(userId, appId)
+      ?: throw ClientException(ErrorCode.InventoryNotFound)
+
+    call.respond(inventory)
+  }
+
+  get("/user/{userId}/inventory/{appId}") {
+    val userId = call.getUserIdParam("userId")
+      ?: throw ClientException(ErrorCode.UserNotFound)
+    val appId = call.parameters["appId"]!!.toInt()
+
+    val inventory = itemRepository.getInventory(userId, appId)
+      ?: throw ClientException(ErrorCode.InventoryNotFound)
+
+    call.respond(inventory)
   }
 }

@@ -13,8 +13,10 @@ class ItemRepository(
 
   private val itemDefinitions = mutableMapOf<Int, List<ItemClass>>()
 
-  suspend fun getItemDefinition(appId: Int): List<ItemClass> {
-    return itemDefinitions.getOrPut(appId) { api.getItemDefinition(appId) }
+  suspend fun getItemDefinition(appId: Int): Result<List<ItemClass>> {
+    return itemDefinitions[appId]?.let { Result.success(it) }
+      ?: api.getItemDefinition(appId)
+        .onSuccess { itemDefinitions[appId] = it }
   }
 
   fun getInventoryFlow(appId: Int): Flow<Inventory> {
@@ -23,7 +25,12 @@ class ItemRepository(
     }.filterNotNull()
   }
 
-  suspend fun fetchInventory(appId: Int) {
-    _inventoryFlow.value = api.getInventory(appId)
+  suspend fun fetchInventory(appId: Int): Result<Inventory> {
+    return api.getInventory(appId)
+      .onSuccess { _inventoryFlow.value = it }
+  }
+
+  suspend fun swapItems(indexA: Int, indexB: Int): Result<Unit> {
+    return api.swapItems(inventoryFlow.value!!.id, indexA, indexB)
   }
 }

@@ -1,40 +1,27 @@
 package io.github.dzivko1.haze.server.routing
 
+import io.github.dzivko1.haze.data.user.inventory.model.SwapItemsRequest
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
-import io.github.dzivko1.haze.server.exceptions.ClientException
-import io.github.dzivko1.haze.server.exceptions.ErrorCode
-import io.github.dzivko1.haze.server.util.getUserId
-import io.github.dzivko1.haze.server.util.getUserIdParam
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.inventoryRoutes() {
-  getInventoryRoute()
+fun Application.inventoryRoutes() {
+  routing {
+    swapItemsRoute()
+  }
 }
 
-fun Route.getInventoryRoute() {
+private fun Route.swapItemsRoute() {
   val itemRepository by inject<ItemRepository>()
 
-  get("/user/inventory/{appId}") {
-    val userId = call.getUserId()
-    val appId = call.parameters["appId"]!!.toInt()
+  post("/inventory/{inventoryId}/swap") { body: SwapItemsRequest ->
+    val inventoryId = call.parameters["inventoryId"]!!.toLong()
 
-    val inventory = itemRepository.getInventory(userId, appId)
-      ?: throw ClientException(ErrorCode.InventoryNotFound)
+    itemRepository.swapItems(inventoryId, body.indexA, body.indexB)
 
-    call.respond(inventory)
-  }
-
-  get("/user/{userId}/inventory/{appId}") {
-    val userId = call.getUserIdParam("userId")
-      ?: throw ClientException(ErrorCode.UserNotFound)
-    val appId = call.parameters["appId"]!!.toInt()
-
-    val inventory = itemRepository.getInventory(userId, appId)
-      ?: throw ClientException(ErrorCode.InventoryNotFound)
-
-    call.respond(inventory)
+    call.respond(HttpStatusCode.OK)
   }
 }
