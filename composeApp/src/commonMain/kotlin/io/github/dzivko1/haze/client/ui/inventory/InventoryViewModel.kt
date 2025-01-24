@@ -39,4 +39,17 @@ class InventoryViewModel(
       }
     }
   }
+
+  fun swapItems(indexA: Int, indexB: Int) {
+    uiState = uiState.copy(
+      itemSlots = uiState.itemSlots.mapIndexed { index, slot ->
+        when (index) {
+          indexA -> slot.copy(item = uiState.itemSlots[indexB].item)
+          indexB -> slot.copy(item = uiState.itemSlots[indexA].item)
+          else -> slot
+        }
+      }
+    )
+    // TODO call api
+  }
 }

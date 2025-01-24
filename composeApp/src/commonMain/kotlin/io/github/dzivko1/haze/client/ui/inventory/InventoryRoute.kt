@@ -16,7 +16,8 @@ fun NavGraphBuilder.inventoryRoute() {
 
     InventoryScreen(
       uiState = uiState,
-      onSlotClick = {}
+      onSlotClick = {},
+      onItemSwap = viewModel::swapItems
     )
   }
 }
