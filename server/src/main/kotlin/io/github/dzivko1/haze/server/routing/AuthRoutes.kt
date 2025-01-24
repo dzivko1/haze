@@ -6,7 +6,6 @@ import io.github.dzivko1.haze.data.user.model.UserAuthRequest
 import io.github.dzivko1.haze.server.domain.user.UserRepository
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -22,9 +21,8 @@ fun Application.authRoutes() {
 private fun Route.registerRoute() {
   val userRepository by inject<UserRepository>()
 
-  post("/auth/register") {
-    val authData = call.receive<UserAuthRequest>()
-    userRepository.saveUser(authData.username, authData.password)
+  post("/auth/register") { body: UserAuthRequest ->
+    userRepository.saveUser(body.username, body.password)
     call.respond(HttpStatusCode.Created)
   }
 }
@@ -32,15 +30,13 @@ private fun Route.registerRoute() {
 private fun Route.loginRoute() {
   val userRepository by inject<UserRepository>()
 
-  post("/auth/login") {
-    val authData = call.receive<UserAuthRequest>()
-
-    if (userRepository.verifyPassword(authData.username, authData.password)) {
+  post("/auth/login") { body: UserAuthRequest ->
+    if (userRepository.verifyPassword(body.username, body.password)) {
       val config = application.environment.config
       val secret = config.property("jwt.secret").getString()
       val issuer = config.property("jwt.issuer").getString()
       val audience = config.property("jwt.audience").getString()
-      val userId = userRepository.getUserByName(authData.username)!!.id.toHexString()
+      val userId = userRepository.getUserByName(body.username)!!.id.toHexString()
       val weekFromNow = Instant.now().plusSeconds(7 * 24 * 60 * 60)
       val token = JWT.create()
         .withAudience(audience)

@@ -5,7 +5,6 @@ import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -33,9 +32,8 @@ fun Route.getItemDefinitionRoute() {
 fun Route.defineItemsRoute() {
   val itemRepository by inject<ItemRepository>()
 
-  post("/items/definition") {
-    val request = call.receive<DefineItemsRequest>()
-    val ids = itemRepository.defineItems(request.appId, request.items)
+  post("/items/definition") { body: DefineItemsRequest ->
+    val ids = itemRepository.defineItems(body.appId, body.items)
     call.respond(hashMapOf("itemClassIds" to ids))
   }
 }
