@@ -15,6 +15,7 @@ import io.github.dzivko1.haze.server.util.containsId
 import io.github.dzivko1.haze.server.util.suspendTransaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.statements.BatchUpdateStatement
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 import kotlin.uuid.toKotlinUuid
@@ -22,6 +23,7 @@ import kotlin.uuid.toKotlinUuid
 class DbItemRepository : ItemRepository {
 
   override suspend fun defineItems(appId: Int, items: List<DefineItemsRequest.Item>): List<Long> {
+    // TODO overwrite the definition instead of upserting
     return suspendTransaction {
       ItemClassesTable.batchUpsert(
         data = items,
@@ -51,7 +53,7 @@ class DbItemRepository : ItemRepository {
 
   override suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long> {
     return suspendTransaction {
-      // Unify all items to specify their target inventories directly (by inventoryId)
+      // Unify all items so that they specify their target inventories directly (by inventoryId)
       val processedItems = items.mapNotNull { item ->
         when (item) {
           is CreateItemsRequest.DirectItemDesignation -> item
@@ -70,6 +72,15 @@ class DbItemRepository : ItemRepository {
         this[ItemsTable.inventory] = item.inventoryId
         this[ItemsTable.slotIndex] = findFirstAvailableSlotIndex(item.inventoryId)
       }.map { it[ItemsTable.id].value }
+        .also { ids ->
+          BatchUpdateStatement(ItemsTable).apply {
+            ids.forEach { id ->
+              addBatch(EntityID(id, ItemsTable))
+              this[ItemsTable.originalId] = id
+            }
+            execute(this@suspendTransaction)
+          }
+        }
     }
   }
 

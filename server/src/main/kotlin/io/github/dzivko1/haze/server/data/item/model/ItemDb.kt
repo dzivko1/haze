@@ -8,17 +8,21 @@ import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object ItemsTable : LongIdTable("items") {
+  val originalId = long("original_id").default(-1)
+  val nextId = reference("next_id", ItemsTable).nullable()
   val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
   val itemClass = reference("item_class", ItemClassesTable)
-  val slotIndex = integer("slot_index")
   val inventory = reference("inventory", InventoriesTable)
+  val slotIndex = integer("slot_index")
 }
 
 class ItemDao(id: EntityID<Long>) : LongEntity(id) {
+  var originalId by ItemsTable.originalId
+  var nextId by ItemsTable.nextId
   var createdAt by ItemsTable.createdAt
   var itemClass by ItemClassDao referencedOn ItemsTable.itemClass
-  var slotIndex by ItemsTable.slotIndex
   var inventory by InventoryDao referencedOn ItemsTable.inventory
+  var slotIndex by ItemsTable.slotIndex
 
   companion object : LongEntityClass<ItemDao>(ItemsTable)
 }
