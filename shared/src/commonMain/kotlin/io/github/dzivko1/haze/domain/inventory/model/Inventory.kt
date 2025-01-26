@@ -17,6 +17,6 @@ data class Inventory(
   data class Item(
     val id: Long,
     val itemClassId: Long,
-    val slotIndex: Int,
+    val slotIndex: Int?,
   )
 }

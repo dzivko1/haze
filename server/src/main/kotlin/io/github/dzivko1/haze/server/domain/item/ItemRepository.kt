@@ -30,6 +30,8 @@ interface ItemRepository {
    */
   suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long>
 
+  suspend fun acceptNewItems(inventoryId: Long)
+
   /**
    * Gets the ID of the inventory denoted by the given [userId] and [appId] combination.
    */

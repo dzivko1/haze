@@ -69,23 +69,11 @@ class DbItemRepository : ItemRepository {
             CreateItemsRequest.DirectItemDesignation(item.itemClassId, inventoryId)
           }
         }
-      }.groupBy { it.inventoryId }.mapValues { (inventoryId, items) ->
-        // Find destination slots for each inventory and filter out items that don't fit
-        val inventorySize = InventoryDao.findById(inventoryId)!!.size
-        val filledSlots = ItemsTable.select(ItemsTable.slotIndex)
-          .where { ItemsTable.inventory eq inventoryId }
-          .map { it[ItemsTable.slotIndex] }.toSet()
+      }
 
-        val freeSlots = inventorySize - filledSlots.size
-        items.take(freeSlots).mapIndexed { index, item ->
-          item to findFirstAvailableSlotIndex(inventorySize, filledSlots, index)!!
-        }
-      }.flatMap { it.value }
-
-      ItemsTable.batchInsert(processedItems) { (item, slotIndex) ->
+      ItemsTable.batchInsert(processedItems) { item ->
         this[ItemsTable.itemClass] = item.itemClassId
         this[ItemsTable.inventory] = item.inventoryId
-        this[ItemsTable.slotIndex] = slotIndex
       }.map { it[ItemsTable.id].value }
         // Manually set originalId to match the auto-generated ID since postgres doesn't support this
         .also { ids ->
@@ -99,6 +87,30 @@ class DbItemRepository : ItemRepository {
             }
           }
         }
+    }
+  }
+
+  override suspend fun acceptNewItems(inventoryId: Long) {
+    suspendTransaction {
+      val inventorySize = InventoryDao.findById(inventoryId)!!.size
+      val newItemIds = ItemsTable.select(ItemsTable.id)
+        .where { ItemsTable.inventory eq inventoryId }
+        .andWhere { ItemsTable.slotIndex eq null }
+        .map { it[ItemsTable.id] }
+
+      val filledSlotIndices = ItemsTable.select(ItemsTable.slotIndex)
+        .where { ItemsTable.inventory eq inventoryId }
+        .mapNotNull { it[ItemsTable.slotIndex] }.toSet()
+
+      val freeSlotCount = inventorySize - filledSlotIndices.size
+
+      BatchUpdateStatement(ItemsTable).apply {
+        newItemIds.take(freeSlotCount).forEachIndexed { index, id ->
+          addBatch(id)
+          this[ItemsTable.slotIndex] = findFirstAvailableSlotIndex(inventorySize, filledSlotIndices, index)
+        }
+        execute(this@suspendTransaction)
+      }
     }
   }
 

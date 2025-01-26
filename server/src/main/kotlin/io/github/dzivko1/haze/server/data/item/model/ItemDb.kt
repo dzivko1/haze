@@ -13,7 +13,7 @@ object ItemsTable : LongIdTable("items") {
   val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
   val itemClass = reference("item_class", ItemClassesTable)
   val inventory = reference("inventory", InventoriesTable)
-  val slotIndex = integer("slot_index")
+  val slotIndex = integer("slot_index").nullable()
 }
 
 class ItemDao(id: EntityID<Long>) : LongEntity(id) {
@@ -23,6 +23,8 @@ class ItemDao(id: EntityID<Long>) : LongEntity(id) {
   var itemClass by ItemClassDao referencedOn ItemsTable.itemClass
   var inventory by InventoryDao referencedOn ItemsTable.inventory
   var slotIndex by ItemsTable.slotIndex
+
+  val isNew: Boolean get() = slotIndex == null
 
   companion object : LongEntityClass<ItemDao>(ItemsTable)
 }
