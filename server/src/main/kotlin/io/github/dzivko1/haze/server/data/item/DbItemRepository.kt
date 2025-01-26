@@ -1,5 +1,6 @@
 package io.github.dzivko1.haze.server.data.item
 
+import io.github.aakira.napier.Napier
 import io.github.dzivko1.haze.data.item.model.CreateItemsRequest
 import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
 import io.github.dzivko1.haze.domain.inventory.model.Inventory
@@ -53,46 +54,58 @@ class DbItemRepository : ItemRepository {
 
   override suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long> {
     return suspendTransaction {
-      // Unify all items so that they specify their target inventories directly (by inventoryId)
       val processedItems = items.mapNotNull { item ->
+        // Unify all items so that they specify their target inventories directly (by inventoryId)
         when (item) {
           is CreateItemsRequest.DirectItemDesignation -> item
           is CreateItemsRequest.IndirectItemDesignation -> {
             val inventoryId = getInventoryId(item.userId, item.appId)
-              ?: kotlin.runCatching {
+              ?: runCatching {
                 createInventory(item.userId, item.appId)
-              }.getOrElse { return@mapNotNull null }
+              }.getOrElse {
+                Napier.e("Could not create missing inventory", it)
+                return@mapNotNull null
+              }
             CreateItemsRequest.DirectItemDesignation(item.itemClassId, inventoryId)
           }
         }
-      }
+      }.groupBy { it.inventoryId }.mapValues { (inventoryId, items) ->
+        // Find destination slots for each inventory and filter out items that don't fit
+        val inventorySize = InventoryDao.findById(inventoryId)!!.size
+        val filledSlots = ItemsTable.select(ItemsTable.slotIndex)
+          .where { ItemsTable.inventory eq inventoryId }
+          .map { it[ItemsTable.slotIndex] }.toSet()
 
-      ItemsTable.batchInsert(processedItems) { item ->
+        val freeSlots = inventorySize - filledSlots.size
+        items.take(freeSlots).mapIndexed { index, item ->
+          item to findFirstAvailableSlotIndex(inventorySize, filledSlots, index)!!
+        }
+      }.flatMap { it.value }
+
+      ItemsTable.batchInsert(processedItems) { (item, slotIndex) ->
         this[ItemsTable.itemClass] = item.itemClassId
         this[ItemsTable.inventory] = item.inventoryId
-        this[ItemsTable.slotIndex] = findFirstAvailableSlotIndex(item.inventoryId)
+        this[ItemsTable.slotIndex] = slotIndex
       }.map { it[ItemsTable.id].value }
+        // Manually set originalId to match the auto-generated ID since postgres doesn't support this
         .also { ids ->
-          BatchUpdateStatement(ItemsTable).apply {
-            ids.forEach { id ->
-              addBatch(EntityID(id, ItemsTable))
-              this[ItemsTable.originalId] = id
+          if (ids.isNotEmpty()) {
+            BatchUpdateStatement(ItemsTable).apply {
+              ids.forEach { id ->
+                addBatch(EntityID(id, ItemsTable))
+                this[ItemsTable.originalId] = id
+              }
+              execute(this@suspendTransaction)
             }
-            execute(this@suspendTransaction)
           }
         }
     }
   }
 
-  private fun findFirstAvailableSlotIndex(inventoryId: Long): Int {
-    return ItemsTable.select(ItemsTable.slotIndex)
-      .where { ItemsTable.inventory eq inventoryId }
-      .orderBy(ItemsTable.slotIndex, SortOrder.ASC)
-      .forUpdate()
-      .fold(0) { expectedSlot, row ->
-        val slot = row[ItemsTable.slotIndex]
-        if (slot == expectedSlot) expectedSlot + 1 else expectedSlot
-      }
+  private fun findFirstAvailableSlotIndex(inventorySize: Int, filledSlots: Set<Int>, skipCount: Int): Int? {
+    val allSlots = 0 until inventorySize
+    val freeSlots = allSlots - filledSlots
+    return freeSlots.getOrNull(skipCount)
   }
 
   override suspend fun getInventory(id: Long): Inventory? {
