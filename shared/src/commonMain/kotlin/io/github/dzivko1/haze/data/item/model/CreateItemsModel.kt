@@ -14,17 +14,19 @@ data class CreateItemsRequest(
   val items: List<Item>,
 ) {
   @Serializable(with = ItemSerializer::class)
-  sealed interface Item
+  sealed interface Item {
+    val itemClassId: Long
+  }
 
   @Serializable
   data class DirectItemDesignation(
-    val itemClassId: Long,
+    override val itemClassId: Long,
     val inventoryId: Long,
   ) : Item
 
   @Serializable
   data class IndirectItemDesignation(
-    val itemClassId: Long,
+    override val itemClassId: Long,
     @Serializable(with = UuidSerializer::class)
     val userId: Uuid,
     val appId: Int,

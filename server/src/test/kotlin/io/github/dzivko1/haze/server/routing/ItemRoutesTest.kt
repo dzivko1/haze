@@ -177,5 +177,36 @@ class ItemRoutesTest : TestBase(InventoriesTable, ItemClassesTable, ItemsTable, 
     }
   }
 
-  // TODO createItems_itemIncompatibleWithApp
+  @Test
+  fun createItems_itemIncompatibleWithApp() = baseTestApp {
+    val user = createTestUser()
+    val app1 = createTestApp("The app")
+    val app2 = createTestApp("Some app")
+    val inventory1 = createTestInventory(user, app1)
+    val inventory2 = createTestInventory(user, app2)
+    val itemClass = createTestItemClass(app1)
+
+    loginUser(user)
+
+    suspendTransaction {
+      val response = client.post("items") {
+        setBody(
+          CreateItemsRequest(
+            listOf(
+              CreateItemsRequest.DirectItemDesignation(itemClass.id.value, inventory2.id.value),
+              CreateItemsRequest.IndirectItemDesignation(
+                itemClass.id.value,
+                inventory2.user.id.value.toKotlinUuid(),
+                inventory2.app.id.value
+              )
+            )
+          )
+        )
+      }
+
+      assertEquals(0, ItemDao.count())
+      assertEquals(HttpStatusCode.OK, response.status)
+      assertEquals(0, response.body<CreateItemsResponse>().itemIds.size)
+    }
+  }
 }

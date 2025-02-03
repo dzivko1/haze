@@ -63,25 +63,8 @@ class DbItemRepository : ItemRepository {
   }
 
   override suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long> {
-    // TODO verify that itemClassId belongs to appId
-
     return suspendTransaction {
-      val processedItems = items.mapNotNull { item ->
-        // Unify all items so that they specify their target inventories directly (by inventoryId)
-        when (item) {
-          is CreateItemsRequest.DirectItemDesignation -> item
-          is CreateItemsRequest.IndirectItemDesignation -> {
-            val inventoryId = getInventoryId(item.userId, item.appId)
-              ?: runCatching {
-                createInventory(item.userId, item.appId)
-              }.getOrElse {
-                Napier.e("Could not create missing inventory", it)
-                return@mapNotNull null
-              }
-            CreateItemsRequest.DirectItemDesignation(item.itemClassId, inventoryId)
-          }
-        }
-      }
+      val processedItems = unifyAndFilterItemDesignations(items)
 
       ItemsTable.batchInsert(processedItems) { item ->
         this[ItemsTable.itemClass] = item.itemClassId
@@ -99,6 +82,39 @@ class DbItemRepository : ItemRepository {
             }
           }
         }
+    }
+  }
+
+  /**
+   * Unifies all items so that they specify their target inventories directly (by inventoryId).
+   * Also filters out invalid item/app combinations.
+   */
+  private suspend fun unifyAndFilterItemDesignations(items: List<CreateItemsRequest.Item>): List<CreateItemsRequest.DirectItemDesignation> {
+    return items.mapNotNull { designation ->
+      val appOfItem = ItemClassesTable.select(ItemClassesTable.app)
+        .where { ItemClassesTable.id eq designation.itemClassId }
+        .singleOrNull()?.get(ItemClassesTable.app)?.value
+
+      when (designation) {
+        is CreateItemsRequest.DirectItemDesignation -> {
+          val targetApp = getInventory(designation.inventoryId)?.appId
+          if (appOfItem == targetApp) designation else null
+        }
+
+        is CreateItemsRequest.IndirectItemDesignation -> {
+          val inventoryId = getInventoryId(designation.userId, designation.appId)
+            ?: runCatching {
+              createInventory(designation.userId, designation.appId)
+            }.getOrElse {
+              Napier.e("Could not create missing inventory", it)
+              return@mapNotNull null
+            }
+
+          if (appOfItem == designation.appId) {
+            CreateItemsRequest.DirectItemDesignation(designation.itemClassId, inventoryId)
+          } else null
+        }
+      }
     }
   }
 
