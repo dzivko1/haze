@@ -1,7 +1,6 @@
 package io.github.dzivko1.haze.server.routing
 
-import io.github.dzivko1.haze.data.item.model.CreateItemsRequest
-import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
+import io.github.dzivko1.haze.data.item.model.*
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -25,7 +24,7 @@ fun Route.getItemDefinitionRoute() {
   get("/items/definition/{appId}") {
     val appId = call.parameters["appId"]!!.toInt()
     val itemDef = itemRepository.getItemDefinition(appId)
-    call.respond(hashMapOf("items" to itemDef))
+    call.respond(GetItemDefinitionResponse(itemDef))
   }
 }
 
@@ -34,7 +33,7 @@ fun Route.defineItemsRoute() {
 
   post("/items/definition") { body: DefineItemsRequest ->
     val ids = itemRepository.defineItems(body.appId, body.items)
-    call.respond(hashMapOf("itemClassIds" to ids))
+    call.respond(DefineItemsResponse(ids))
   }
 }
 
@@ -43,6 +42,6 @@ fun Route.createItemsRoute() {
 
   post("/items") { body: CreateItemsRequest ->
     val ids = itemRepository.createItems(body.items)
-    call.respond(hashMapOf("itemIds" to ids))
+    call.respond(CreateItemsResponse(ids))
   }
 }

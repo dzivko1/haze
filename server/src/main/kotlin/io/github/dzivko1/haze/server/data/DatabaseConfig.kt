@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-fun Application.configureDatabase() {
+fun Application.databaseModule() {
   Database.connect(
     "jdbc:postgresql://localhost:5432/postgres",
     user = "postgres",

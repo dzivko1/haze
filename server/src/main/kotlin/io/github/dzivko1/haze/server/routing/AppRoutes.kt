@@ -1,6 +1,7 @@
 package io.github.dzivko1.haze.server.routing
 
 import io.github.dzivko1.haze.data.hazeApp.model.RegisterAppRequest
+import io.github.dzivko1.haze.data.hazeApp.model.RegisterAppResponse
 import io.github.dzivko1.haze.server.domain.hazeApp.HazeAppRepository
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -21,6 +22,6 @@ private fun Route.registerAppRoute() {
 
   post("/apps/register") { body: RegisterAppRequest ->
     val appId = appRepository.registerApp(body.name)
-    call.respond(hashMapOf("appId" to appId))
+    call.respond(RegisterAppResponse(appId))
   }
 }

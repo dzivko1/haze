@@ -4,7 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ErrorResponse(
-  val code: Int,
-  val description: String,
-  val message: String? = null,
-)
+  val error: Content
+) {
+  @Serializable
+  data class Content(
+    val code: Int,
+    val description: String,
+    val message: String? = null
+  )
+}

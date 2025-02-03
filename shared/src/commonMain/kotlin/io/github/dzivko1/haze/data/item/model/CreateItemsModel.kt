@@ -31,6 +31,11 @@ data class CreateItemsRequest(
   ) : Item
 }
 
+@Serializable
+data class CreateItemsResponse(
+  val itemIds: List<Long>
+)
+
 private object ItemSerializer : JsonContentPolymorphicSerializer<CreateItemsRequest.Item>(CreateItemsRequest.Item::class) {
   override fun selectDeserializer(element: JsonElement): DeserializationStrategy<CreateItemsRequest.Item> {
     return when {

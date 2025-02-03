@@ -1,6 +1,8 @@
 package io.github.dzivko1.haze.server.data.item.model
 
+import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppDao
 import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppsTable
+import io.github.dzivko1.haze.server.data.user.model.UserDao
 import io.github.dzivko1.haze.server.data.user.model.UsersTable
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
@@ -14,8 +16,8 @@ object InventoriesTable : LongIdTable("inventories") {
 }
 
 class InventoryDao(id: EntityID<Long>) : LongEntity(id) {
-  var user by InventoriesTable.user
-  var app by InventoriesTable.app
+  var user by UserDao referencedOn InventoriesTable.user
+  var app by HazeAppDao referencedOn InventoriesTable.app
   var size by InventoriesTable.size
 
   companion object : LongEntityClass<InventoryDao>(InventoriesTable)

@@ -11,8 +11,10 @@ class ClientException(
 
 fun ClientException.toErrorResponse(): ErrorResponse {
   return ErrorResponse(
-    code = errorCode.code,
-    description = errorCode.description,
-    message = message
+    ErrorResponse.Content(
+      code = errorCode.code,
+      description = errorCode.description,
+      message = message
+    )
   )
 }

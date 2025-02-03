@@ -1,6 +1,7 @@
 package io.github.dzivko1.haze.client.di
 
 import com.russhwolf.settings.Settings
+import io.github.aakira.napier.Napier
 import io.github.dzivko1.haze.client.data.core.network.HazeApiService
 import io.github.dzivko1.haze.client.data.core.storage.DataStore
 import io.github.dzivko1.haze.client.domain.item.ItemRepository
@@ -20,6 +21,11 @@ val DataModule = module {
   factory {
     HttpClient {
       install(Logging) {
+        logger = object: Logger {
+          override fun log(message: String) {
+            Napier.v("HTTP Client", null, message)
+          }
+        }
         level = LogLevel.ALL
       }
       install(ContentNegotiation) {

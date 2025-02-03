@@ -1,4 +1,4 @@
-package io.github.dzivko1.haze.data.user.inventory.model
+package io.github.dzivko1.haze.data.inventory.model
 
 import kotlinx.serialization.Serializable
 

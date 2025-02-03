@@ -15,3 +15,8 @@ data class DefineItemsRequest(
     val largeImageUrl: String,
   )
 }
+
+@Serializable
+data class DefineItemsResponse(
+  val itemClassIds: List<Long>
+)

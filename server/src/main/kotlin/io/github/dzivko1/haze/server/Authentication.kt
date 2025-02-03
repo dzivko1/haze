@@ -8,8 +8,9 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
+import java.time.Instant
 
-fun Application.configureAuthentication() {
+fun Application.authenticationModule() {
   val secret = environment.config.property("jwt.secret").getString()
   val issuer = environment.config.property("jwt.issuer").getString()
   val audience = environment.config.property("jwt.audience").getString()
@@ -38,4 +39,19 @@ fun Application.configureAuthentication() {
       }
     }
   }
+}
+
+fun generateAuthToken(
+  userIdClaim: String,
+  secret: String,
+  issuer: String,
+  audience: String,
+  expiresAt: Instant
+): String {
+  return JWT.create()
+    .withAudience(audience)
+    .withIssuer(issuer)
+    .withClaim("userId", userIdClaim)
+    .withExpiresAt(expiresAt)
+    .sign(Algorithm.HMAC256(secret))
 }

@@ -14,8 +14,15 @@ application {
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 
-tasks.named<KotlinCompilationTask<*>>("compileKotlin").configure {
-  compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
+listOf(
+  tasks.named<KotlinCompilationTask<*>>("compileKotlin"),
+  tasks.named<KotlinCompilationTask<*>>("compileTestKotlin")
+).forEach {
+  it.configure {
+    compilerOptions {
+      freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
+    }
+  }
 }
 
 dependencies {
@@ -40,4 +47,8 @@ dependencies {
   implementation(libs.postgresql)
 
   testImplementation(libs.kotlin.test.junit)
+  testImplementation(libs.ktor.server.testHost)
+  testImplementation(libs.ktor.client.logging)
+  testImplementation(libs.ktor.client.contentNegotiation)
+  testImplementation(libs.h2)
 }

@@ -4,11 +4,11 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 
-fun Application.configureStatusPages() {
+fun Application.statusPagesModule() {
   install(StatusPages) {
     exception<ClientException> { call, cause ->
       call.respond(
-        message = hashMapOf("error" to cause.toErrorResponse()),
+        message = cause.toErrorResponse(),
         status = cause.httpStatusCode
       )
     }

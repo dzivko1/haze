@@ -1,6 +1,6 @@
 package io.github.dzivko1.haze.server.routing
 
-import io.github.dzivko1.haze.data.user.inventory.model.SwapItemsRequest
+import io.github.dzivko1.haze.data.inventory.model.SwapItemsRequest
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
 import io.ktor.http.*
 import io.ktor.server.application.*

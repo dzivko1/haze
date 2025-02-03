@@ -6,7 +6,12 @@ import io.github.dzivko1.haze.data.item.model.DefineItemsRequest
 import io.github.dzivko1.haze.domain.inventory.model.Inventory
 import io.github.dzivko1.haze.domain.item.model.ItemClass
 import io.github.dzivko1.haze.server.data.hazeApp.model.HazeAppsTable
-import io.github.dzivko1.haze.server.data.item.model.*
+import io.github.dzivko1.haze.server.data.item.model.InventoriesTable
+import io.github.dzivko1.haze.server.data.item.model.InventoryDao
+import io.github.dzivko1.haze.server.data.item.model.ItemClassDao
+import io.github.dzivko1.haze.server.data.item.model.ItemClassesTable
+import io.github.dzivko1.haze.server.data.item.model.ItemDao
+import io.github.dzivko1.haze.server.data.item.model.ItemsTable
 import io.github.dzivko1.haze.server.data.user.model.UsersTable
 import io.github.dzivko1.haze.server.domain.hazeApp.getInitialInventorySize
 import io.github.dzivko1.haze.server.domain.item.ItemRepository
@@ -15,7 +20,12 @@ import io.github.dzivko1.haze.server.exceptions.ErrorCode
 import io.github.dzivko1.haze.server.util.containsId
 import io.github.dzivko1.haze.server.util.suspendTransaction
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
+import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.statements.BatchUpdateStatement
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
@@ -53,6 +63,8 @@ class DbItemRepository : ItemRepository {
   }
 
   override suspend fun createItems(items: List<CreateItemsRequest.Item>): List<Long> {
+    // TODO verify that itemClassId belongs to appId
+
     return suspendTransaction {
       val processedItems = items.mapNotNull { item ->
         // Unify all items so that they specify their target inventories directly (by inventoryId)
@@ -92,7 +104,9 @@ class DbItemRepository : ItemRepository {
 
   override suspend fun acceptNewItems(inventoryId: Long) {
     suspendTransaction {
-      val inventorySize = InventoryDao.findById(inventoryId)!!.size
+      val inventorySize = InventoryDao.findById(inventoryId)?.size
+        ?: throw ClientException(ErrorCode.InventoryNotFound)
+
       val newItemIds = ItemsTable.select(ItemsTable.id)
         .where { ItemsTable.inventory eq inventoryId }
         .andWhere { ItemsTable.slotIndex eq null }
@@ -104,12 +118,12 @@ class DbItemRepository : ItemRepository {
 
       val freeSlotCount = inventorySize - filledSlotIndices.size
 
-      BatchUpdateStatement(ItemsTable).apply {
+      BatchUpdateStatement(ItemsTable).let { batch ->
         newItemIds.take(freeSlotCount).forEachIndexed { index, id ->
-          addBatch(id)
-          this[ItemsTable.slotIndex] = findFirstAvailableSlotIndex(inventorySize, filledSlotIndices, index)
+          batch.addBatch(id)
+          batch[ItemsTable.slotIndex] = findFirstAvailableSlotIndex(inventorySize, filledSlotIndices, index)
         }
-        execute(this@suspendTransaction)
+        if (batch.data.size > 0) batch.execute(this@suspendTransaction)
       }
     }
   }
@@ -125,8 +139,8 @@ class DbItemRepository : ItemRepository {
       InventoryDao.findById(id)?.let { inventory ->
         Inventory(
           id = id,
-          ownerId = inventory.user.value.toKotlinUuid(),
-          appId = inventory.app.value,
+          ownerId = inventory.user.id.value.toKotlinUuid(),
+          appId = inventory.app.id.value,
           size = inventory.size,
           items = ItemDao.find { ItemsTable.inventory eq id }
             .orderBy(ItemsTable.slotIndex to SortOrder.ASC)
@@ -162,11 +176,11 @@ class DbItemRepository : ItemRepository {
       if (!UsersTable.containsId(userId)) throw ClientException(ErrorCode.UserNotFound)
       if (!HazeAppsTable.containsId(appId)) throw ClientException(ErrorCode.AppNotFound)
 
-      InventoryDao.new {
-        this.user = EntityID(userId.toJavaUuid(), UsersTable)
-        this.app = EntityID(appId, HazeAppsTable)
-        this.size = getInitialInventorySize(appId)
-      }.id.value
+      InventoriesTable.insertAndGetId {
+        it[InventoriesTable.user] = userId.toJavaUuid()
+        it[InventoriesTable.app] = appId
+        it[InventoriesTable.size] = getInitialInventorySize(appId)
+      }.value
     }
   }
 

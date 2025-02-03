@@ -3,9 +3,9 @@ package io.github.dzivko1.haze.client.data.core.network
 import io.github.aakira.napier.Napier
 import io.github.dzivko1.haze.client.data.core.storage.DataStore
 import io.github.dzivko1.haze.data.item.model.GetItemDefinitionResponse
-import io.github.dzivko1.haze.data.user.inventory.model.SwapItemsRequest
+import io.github.dzivko1.haze.data.inventory.model.SwapItemsRequest
+import io.github.dzivko1.haze.data.user.model.LoginResponse
 import io.github.dzivko1.haze.data.user.model.UserAuthRequest
-import io.github.dzivko1.haze.data.user.model.UserAuthResponse
 import io.github.dzivko1.haze.domain.inventory.model.Inventory
 import io.github.dzivko1.haze.domain.item.model.ItemClass
 import io.ktor.client.*
@@ -21,7 +21,7 @@ class HazeApiService(
     return safeCall {
       val token = client.post("auth/login") {
         setBody(UserAuthRequest(username, password))
-      }.bodyOrNull<UserAuthResponse>()?.token
+      }.bodyOrNull<LoginResponse>()?.token
 
       dataStore.authToken = token
     }

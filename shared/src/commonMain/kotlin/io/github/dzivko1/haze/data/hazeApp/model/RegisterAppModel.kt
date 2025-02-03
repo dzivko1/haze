@@ -6,3 +6,8 @@ import kotlinx.serialization.Serializable
 data class RegisterAppRequest(
   val name: String,
 )
+
+@Serializable
+data class RegisterAppResponse(
+  val appId: Int
+)
